@@ -8,25 +8,24 @@ spring:
     name: portfolio-backend
 
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:portfolio_db}?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:portfolio_db}?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&characterSetResults=UTF-8&allowPublicKeyRetrieval=true
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USER:root}
     password: ${DB_PASSWORD:}
     hikari:
-      minimum-idle: 5
+      minimum-idle: 2
       maximum-pool-size: 20
       idle-timeout: 30000
-      max-lifetime: 1800000
+      max-lifetime: 600000
       connection-timeout: 30000
+      keepalive-time: 60000
+      connection-test-query: SELECT 1
 
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+    show-sql: false
 
   # 首次启动时执行初始化 SQL（建表后可注释掉）
   sql:

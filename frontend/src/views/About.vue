@@ -4,7 +4,7 @@
       <div class="container">
         <ScrollReveal>
           <h1 class="section-title">关于我</h1>
-          <p class="section-subtitle">全栈工程师 · IT团队负责人 · 持续学习者</p>
+          <p class="section-subtitle">{{ config.profile_subtitle || '全栈工程师 · IT团队负责人 · 持续学习者' }}</p>
         </ScrollReveal>
       </div>
     </section>
@@ -18,20 +18,10 @@
               <div class="avatar-placeholder">&lt;/&gt;</div>
             </div>
             <div class="profile-info">
-              <h2>你好，我是一名全栈工程师</h2>
-              <p>
-                2017年起从事互联网研发，长期面向<strong>企业级B端</strong>场景。
-                擅长在需求复杂、角色多、流程长的业务里，把前端做成可维护、可扩展、可协作交付的形态；
-                同时具备Java后端开发能力，能从方案到上线完成闭环。
-              </p>
-              <p>
-                担任<strong>IT部门主管</strong>，带领10人团队。直接与使用人员沟通业务需求，
-                将业务语言转化为技术方案，并负责系统的持续迭代与维护。
-              </p>
-              <p>
-                保持对新技术的敏感度，从Vue 2到Vue 3再到React，持续拓展技术边界。
-                相信好的工程师不只是写代码，更是<strong>用技术解决业务问题</strong>的人。
-              </p>
+              <h2>{{ config.profile_title || '你好，我是一名全栈工程师' }}</h2>
+              <p v-if="config.profile_intro_1" v-html="config.profile_intro_1"></p>
+              <p v-if="config.profile_intro_2" v-html="config.profile_intro_2"></p>
+              <p v-if="config.profile_intro_3" v-html="config.profile_intro_3"></p>
               <div class="profile-tags">
                 <span class="tag" v-for="t in profileTags" :key="t">{{ t }}</span>
               </div>
@@ -110,7 +100,7 @@
             <div class="value-card glass-card gradient-border">
               <div class="value-icon">{{ v.icon }}</div>
               <h3>{{ v.title }}</h3>
-              <p>{{ v.desc }}</p>
+              <p>{{ v.description }}</p>
             </div>
           </ScrollReveal>
         </div>
@@ -120,79 +110,50 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import ScrollReveal from '@/components/ScrollReveal.vue'
+import { getTimeline, getSkills, getSiteConfig, getValues } from '@/api/blog'
 
-const profileTags = [
-  '前端架构', 'Vue 2/3', 'React', 'Java', 'Spring Boot',
-  '团队管理', '需求分析', '企业级B端',
-]
+const config = ref<Record<string, string>>({})
+const timeline = ref<Array<{ year: string; title: string; desc: string; techs: string[] }>>([])
+const skills = ref<Array<{ name: string; level: number; desc: string }>>([])
+const values = ref<Array<{ icon: string; title: string; description: string }>>([])
 
-const timeline = [
-  {
-    year: '2017',
-    title: '踏入互联网行业',
-    desc: '开始前端开发工作，从原生JS、jQuery到现代框架的过渡，打下扎实基础。',
-    techs: ['JavaScript', 'HTML/CSS', 'jQuery'],
-  },
-  {
-    year: '2018-2019',
-    title: '深入Vue生态，接触全栈',
-    desc: '主攻Vue 2.x，同时开始学习Java后端开发，逐步具备全栈交付能力。',
-    techs: ['Vue 2', 'Element UI', 'Java', 'Spring Boot'],
-  },
-  {
-    year: '2020-2021',
-    title: '主导PLM系统前端架构',
-    desc: '在轮胎企业PLM项目中，从零搭建前端架构体系，制定规范，并参与后端开发。',
-    techs: ['Vue 2/3', 'TypeScript', 'Spring Boot', 'MySQL'],
-  },
-  {
-    year: '2022-2023',
-    title: '晋升IT部门主管',
-    desc: '开始管理10人技术团队，兼顾技术决策与业务沟通，负责系统持续迭代。',
-    techs: ['团队管理', '需求分析', 'React', 'Pinia'],
-  },
-  {
-    year: '2024-至今',
-    title: '技术深耕与持续学习',
-    desc: '深入Vue 3 Composition API与React，探索前端工程化最佳实践，拥抱AI辅助开发。',
-    techs: ['Vue 3', 'React', 'Vite', 'AI 工具链'],
-  },
-]
+const profileTags = computed(() => {
+  const tags = config.value.profile_tags
+  if (tags) return tags.split(',').map(t => t.trim()).filter(Boolean)
+  return ['前端架构', 'Vue 2/3', 'React', 'Java', 'Spring Boot', '团队管理', '需求分析', '企业级B端']
+})
 
-const skills = [
-  { name: 'Vue 2 / Vue 3', level: 95, desc: '核心技术栈，从架构搭建到组件设计均有大量实战' },
-  { name: 'React', level: 75, desc: '能独立开发React项目，持续深入Hooks与生态' },
-  { name: 'TypeScript', level: 85, desc: '类型驱动开发，提升大型项目的可维护性' },
-  { name: 'JavaScript / ES6+', level: 90, desc: '扎实的语言基础，理解引擎与运行时机制' },
-  { name: 'Java / Spring Boot', level: 78, desc: '参与后端业务开发，熟悉RESTful API设计与数据库操作' },
-  { name: 'MySQL / Redis', level: 72, desc: '业务场景中的数据建模与缓存策略' },
-  { name: '前端工程化', level: 88, desc: 'Webpack/Vite构建、规范体系、CI/CD流程' },
-  { name: '团队管理', level: 80, desc: '10人团队的任务分配、代码评审与技术指导' },
-]
-
-const values = [
-  {
-    icon: '🎯',
-    title: '业务驱动技术',
-    desc: '技术选型服务于业务目标，不为炫技而引入复杂度。每次决策都考虑团队能力与维护成本。',
-  },
-  {
-    icon: '🧱',
-    title: '可维护性优先',
-    desc: '好的代码不是写出来让自己佩服的，是让团队任何人都能快速理解和安全修改的。',
-  },
-  {
-    icon: '📏',
-    title: '约定大于配置',
-    desc: '通过工程化手段（规范、模板、自动化检查）降低协作摩擦，让团队产出一致。',
-  },
-  {
-    icon: '🔄',
-    title: '渐进式迭代',
-    desc: '不追求一步到位的完美方案，用小步快跑、持续重构的方式让系统健康演进。',
-  },
-]
+onMounted(async () => {
+  try {
+    const [timelineRes, skillsRes, configRes, valuesRes] = await Promise.all([
+      getTimeline(), getSkills(), getSiteConfig(), getValues(),
+    ])
+    timeline.value = (timelineRes.data || []).map((item: any) => ({
+      year: item.year,
+      title: item.title,
+      desc: item.description,
+      techs: item.techs ? item.techs.split(',') : [],
+    }))
+    skills.value = (skillsRes.data || []).map((item: any) => ({
+      name: item.name,
+      level: item.level,
+      desc: item.description,
+    }))
+    config.value = configRes.data || {}
+    values.value = (valuesRes.data || []).map((item: any) => ({
+      icon: item.icon,
+      title: item.title,
+      description: item.description,
+    }))
+  } catch {
+    timeline.value = []
+    skills.value = []
+    config.value = {}
+    values.value = []
+  }
+})
 </script>
 
 <style scoped>

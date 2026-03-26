@@ -1,7 +1,10 @@
 <template>
   <div class="post-editor">
     <div class="page-header">
-      <h1 class="page-title">{{ isEdit ? '编辑文章' : '写新文章' }}</h1>
+      <div class="title-row">
+        <button class="btn-back" @click="router.back()">← 返回</button>
+        <h1 class="page-title">{{ isEdit ? '编辑文章' : '写新文章' }}</h1>
+      </div>
       <div class="header-actions">
         <button class="btn btn-outline" @click="saveDraft" :disabled="saving">保存草稿</button>
         <button class="btn btn-primary" @click="publish" :disabled="saving">
@@ -26,10 +29,21 @@
         <div class="form-row">
           <div class="form-group">
             <label>分类</label>
-            <select v-model="form.category" class="form-select">
-              <option value="">选择分类</option>
-              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
-            </select>
+            <div class="category-combo">
+              <select v-model="selectedCategory" class="form-select" @change="onCategorySelect">
+                <option value="">选择已有分类</option>
+                <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+                <option value="__custom__">+ 自定义分类</option>
+              </select>
+              <input
+                v-if="showCustomCategory"
+                v-model="customCategory"
+                type="text"
+                placeholder="输入新分类名称"
+                class="form-input"
+                style="margin-top: 8px"
+              />
+            </div>
           </div>
           <div class="form-group">
             <label>阅读时间（分钟）</label>
@@ -80,7 +94,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { adminCreatePost, adminUpdatePost, adminGetPost, type BlogPost } from '@/api/blog'
+import { adminCreatePost, adminUpdatePost, adminGetPost, adminGetCategories, adminCreateCategory, type BlogPost, type Category } from '@/api/blog'
 
 const route = useRoute()
 const router = useRouter()
@@ -91,7 +105,30 @@ const saving = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
 
-const categories = ['前端', '后端', '架构', '团队', '其他']
+const categories = ref<string[]>([])
+const selectedCategory = ref('')
+const showCustomCategory = ref(false)
+const customCategory = ref('')
+
+function onCategorySelect() {
+  if (selectedCategory.value === '__custom__') {
+    showCustomCategory.value = true
+    form.value.category = ''
+    customCategory.value = ''
+  } else {
+    showCustomCategory.value = false
+    form.value.category = selectedCategory.value
+  }
+}
+
+async function loadCategories() {
+  try {
+    const res: any = await adminGetCategories()
+    if (res.code === 200 && res.data) {
+      categories.value = res.data.map((c: Category) => c.name)
+    }
+  } catch (_) {}
+}
 
 const form = ref<BlogPost>({
   title: '',
@@ -143,6 +180,15 @@ async function savePost() {
   errorMsg.value = ''
   successMsg.value = ''
 
+  if (showCustomCategory.value && customCategory.value) {
+    form.value.category = customCategory.value
+    if (!categories.value.includes(customCategory.value)) {
+      try {
+        await adminCreateCategory({ name: customCategory.value, sortOrder: 0 })
+      } catch (_) {}
+    }
+  }
+
   try {
     let res: any
     if (isEdit.value) {
@@ -167,11 +213,20 @@ async function savePost() {
 }
 
 onMounted(async () => {
+  await loadCategories()
+
   if (isEdit.value) {
     try {
       const res: any = await adminGetPost(Number(route.params.id))
       if (res.code === 200) {
         form.value = res.data
+        if (categories.value.includes(form.value.category)) {
+          selectedCategory.value = form.value.category
+        } else if (form.value.category) {
+          selectedCategory.value = '__custom__'
+          showCustomCategory.value = true
+          customCategory.value = form.value.category
+        }
       }
     } catch (_) {
       errorMsg.value = '加载文章失败'
@@ -194,6 +249,30 @@ watch([errorMsg, successMsg], () => {
   margin-bottom: 32px;
   flex-wrap: wrap;
   gap: 16px;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-back {
+  background: none;
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.btn-back:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
 }
 
 .page-title {

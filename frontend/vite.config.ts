@@ -9,10 +9,13 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  build: {
+    assetsDir: 'static',
+  },
   server: {
     port: 3000,
     proxy: {
-      '/api': {
+      '/portfolio-api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },

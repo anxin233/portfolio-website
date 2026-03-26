@@ -10,31 +10,24 @@
     </section>
 
     <!-- Featured -->
-    <section class="section">
+    <section class="section" v-if="featured.featured_title">
       <div class="container">
         <ScrollReveal>
           <div class="featured-project glass-card">
             <div class="featured-badge">⭐ 代表作品</div>
-            <h2 class="featured-title">轮胎企业产品生命周期管理系统（PLM）</h2>
-            <p class="featured-subtitle">前端架构主导 · 全栈参与 · IT部门主管负责</p>
+            <h2 class="featured-title">{{ featured.featured_title }}</h2>
+            <p class="featured-subtitle">{{ featured.featured_subtitle }}</p>
 
             <div class="featured-grid">
               <div class="featured-desc">
                 <h3>项目背景</h3>
-                <p>
-                  面向轮胎制造企业的产品生命周期管理系统，支撑从产品需求、设计、变更、
-                  版本控制到跨部门协同审批等核心业务流程。系统用户覆盖研发、工艺、质量、
-                  生产等多个部门，业务流程复杂、数据维度多。
-                </p>
+                <p>{{ featured.featured_background }}</p>
 
                 <h3>我的职责</h3>
                 <ul>
-                  <li><strong>前端架构搭建</strong>：从零构建整体前端工程，包括技术选型、目录规范、
-                    组件体系、状态管理方案与构建流程</li>
-                  <li><strong>前端核心开发</strong>：复杂表单系统、多级审批流程、数据展示与交互</li>
-                  <li><strong>后端业务开发</strong>：参与核心模块API设计与实现</li>
-                  <li><strong>需求对接</strong>：直接与业务部门沟通，将业务语言转化为技术方案</li>
-                  <li><strong>团队管理</strong>：负责开发任务分配、代码评审与技术指导</li>
+                  <li v-for="r in responsibilities" :key="r">
+                    <strong>{{ r.split('：')[0] }}</strong>：{{ r.split('：').slice(1).join('：') }}
+                  </li>
                 </ul>
               </div>
 
@@ -42,19 +35,19 @@
                 <div class="meta-block">
                   <h4>前端技术栈</h4>
                   <div class="meta-tags">
-                    <span class="tag" v-for="t in plmFrontend" :key="t">{{ t }}</span>
+                    <span class="tag" v-for="t in frontendTechs" :key="t">{{ t }}</span>
                   </div>
                 </div>
                 <div class="meta-block">
                   <h4>后端技术栈</h4>
                   <div class="meta-tags">
-                    <span class="tag" v-for="t in plmBackend" :key="t">{{ t }}</span>
+                    <span class="tag" v-for="t in backendTechs" :key="t">{{ t }}</span>
                   </div>
                 </div>
                 <div class="meta-block">
                   <h4>项目亮点</h4>
                   <div class="highlights-list">
-                    <div class="highlight" v-for="h in plmHighlights" :key="h">
+                    <div class="highlight" v-for="h in highlights" :key="h">
                       <span class="highlight-check">✓</span>
                       {{ h }}
                     </div>
@@ -63,7 +56,7 @@
               </div>
             </div>
 
-            <div class="challenges">
+            <div class="challenges" v-if="challenges.length">
               <h3>技术难点与方案</h3>
               <div class="challenge-grid">
                 <div class="challenge-card" v-for="c in challenges" :key="c.title">
@@ -88,7 +81,7 @@
         </ScrollReveal>
 
         <div class="projects-grid">
-          <ScrollReveal v-for="(p, i) in otherProjects" :key="p.title" :delay="i * 100">
+          <ScrollReveal v-for="(p, i) in otherProjects" :key="p.id" :delay="i * 100">
             <div class="project-card glass-card gradient-border">
               <div class="project-card-header">
                 <div class="project-icon">{{ p.icon }}</div>
@@ -98,9 +91,9 @@
                 </div>
               </div>
               <h3 class="project-name">{{ p.title }}</h3>
-              <p class="project-desc">{{ p.desc }}</p>
+              <p class="project-desc">{{ p.description }}</p>
               <div class="project-tags">
-                <span class="tag" v-for="t in p.techs" :key="t">{{ t }}</span>
+                <span class="tag" v-for="t in (p.techs || '').split(',').map(s => s.trim()).filter(Boolean)" :key="t">{{ t }}</span>
               </div>
             </div>
           </ScrollReveal>
@@ -111,74 +104,53 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import ScrollReveal from '@/components/ScrollReveal.vue'
+import { getProjects, getProjectChallenges, getFeaturedProject } from '@/api/blog'
 
-const plmFrontend = ['Vue 2/3', 'TypeScript', 'Vuex/Pinia', 'Vue Router', 'Element UI/Plus', 'Webpack/Vite', 'SCSS', 'Axios']
-const plmBackend = ['Java', 'Spring Boot', 'Spring MVC', 'MyBatis', 'MySQL', 'Redis', 'Maven']
+const featured = ref<Record<string, string>>({})
+const challenges = ref<Array<{ title: string; problem: string; solution: string; result: string }>>([])
+const otherProjects = ref<Array<any>>([])
 
-const plmHighlights = [
-  '前端整体架构从零搭建',
-  '支撑多部门协同的复杂业务流程',
-  '直接与业务人员沟通需求并落地',
-  '带领团队完成开发与持续迭代',
-  '系统稳定运行并持续维护优化',
-]
+const responsibilities = computed(() => {
+  const raw = featured.value.featured_responsibilities || ''
+  return raw.split('\n').filter(Boolean)
+})
 
-const challenges = [
-  {
-    title: '复杂表单与多步骤流程',
-    problem: 'PLM系统涉及大量多层级表单，且与审批流程强耦合，状态管理复杂。',
-    solution: '设计统一的表单配置化体系与状态机模型，将表单校验、步骤控制、与后端流程状态对齐，减少硬编码。',
-    result: '新业务表单开发效率提升，状态一致性问题显著减少',
-  },
-  {
-    title: '前端架构的可扩展性',
-    problem: '业务模块持续增加，需要保证新模块接入成本低且不影响已有功能。',
-    solution: '采用模块化目录结构，抽取公共组件库与工具层，制定代码规范与路由约定，新人可快速上手。',
-    result: '新模块接入周期可控，团队协作效率明显提升',
-  },
-  {
-    title: 'Vue 2 到 Vue 3 的渐进迁移',
-    problem: '在业务不停的前提下，需要逐步将技术栈从Vue 2迁移到Vue 3。',
-    solution: '采用渐进式策略，新模块使用Vue 3 + Composition API，核心公共层做兼容封装，逐步替换老模块。',
-    result: '平稳过渡，没有出现业务中断',
-  },
-]
+const highlights = computed(() => {
+  const raw = featured.value.featured_highlights || ''
+  return raw.split('\n').filter(Boolean)
+})
 
-const otherProjects = [
-  {
-    icon: '📊',
-    title: '企业数据看板系统',
-    desc: '面向管理层的经营数据可视化平台，支持多维度数据钻取与实时刷新。',
-    techs: ['Vue 3', 'ECharts', 'Spring Boot', 'MySQL'],
-    github: '',
-    demo: '',
-  },
-  {
-    icon: '🔧',
-    title: '内部工具平台',
-    desc: '统一的内部效率工具集，包括代码生成器、接口文档管理、部署辅助等。',
-    techs: ['Vue 3', 'Node.js', 'Shell'],
-    github: '',
-    demo: '',
-  },
-  {
-    icon: '📱',
-    title: '移动端H5应用',
-    desc: '面向一线操作人员的移动端数据采集与查询应用。',
-    techs: ['Vue 3', 'Vant', 'Spring Boot'],
-    github: '',
-    demo: '',
-  },
-  {
-    icon: '🧩',
-    title: '前端组件库',
-    desc: '团队内部共享的业务组件库，统一交互规范，提升开发效率。',
-    techs: ['Vue 3', 'TypeScript', 'Storybook'],
-    github: '',
-    demo: '',
-  },
-]
+const frontendTechs = computed(() => {
+  const raw = featured.value.featured_frontend_techs || ''
+  return raw.split(',').map(s => s.trim()).filter(Boolean)
+})
+
+const backendTechs = computed(() => {
+  const raw = featured.value.featured_backend_techs || ''
+  return raw.split(',').map(s => s.trim()).filter(Boolean)
+})
+
+onMounted(async () => {
+  try {
+    const [featuredRes, challengesRes, projectsRes] = await Promise.all([
+      getFeaturedProject(), getProjectChallenges(), getProjects(),
+    ])
+    featured.value = featuredRes.data || {}
+    challenges.value = (challengesRes.data || []).map((c: any) => ({
+      title: c.title,
+      problem: c.problem,
+      solution: c.solution,
+      result: c.result,
+    }))
+    otherProjects.value = projectsRes.data || []
+  } catch {
+    featured.value = {}
+    challenges.value = []
+    otherProjects.value = []
+  }
+})
 </script>
 
 <style scoped>

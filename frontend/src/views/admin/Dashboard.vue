@@ -19,9 +19,10 @@
       </div>
 
       <div class="recent-list">
-        <div
+        <router-link
           v-for="post in recentPosts"
           :key="post.id"
+          :to="`/admin/post/edit/${post.id}`"
           class="recent-item glass-card"
         >
           <div class="recent-info">
@@ -34,7 +35,7 @@
           <span class="status-badge" :class="post.published ? 'published' : 'draft'">
             {{ post.published ? '已发布' : '草稿' }}
           </span>
-        </div>
+        </router-link>
 
         <div v-if="recentPosts.length === 0" class="empty">
           暂无文章，去写一篇吧
@@ -169,6 +170,18 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.recent-item:hover {
+  border-color: var(--accent-cyan);
+}
+
+.recent-item:hover h3 {
+  color: var(--accent-cyan);
 }
 
 .recent-info h3 {

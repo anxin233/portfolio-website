@@ -66,6 +66,36 @@ const router = createRouter({
           name: 'AdminPostEdit',
           component: () => import('@/views/admin/PostEditor.vue'),
         },
+        {
+          path: 'timeline',
+          name: 'AdminTimeline',
+          component: () => import('@/views/admin/TimelineManager.vue'),
+        },
+        {
+          path: 'skills',
+          name: 'AdminSkills',
+          component: () => import('@/views/admin/SkillManager.vue'),
+        },
+        {
+          path: 'profile',
+          name: 'AdminProfile',
+          component: () => import('@/views/admin/ProfileManager.vue'),
+        },
+        {
+          path: 'values',
+          name: 'AdminValues',
+          component: () => import('@/views/admin/ValueManager.vue'),
+        },
+        {
+          path: 'featured-project',
+          name: 'AdminFeaturedProject',
+          component: () => import('@/views/admin/FeaturedProjectManager.vue'),
+        },
+        {
+          path: 'projects-manage',
+          name: 'AdminProjects',
+          component: () => import('@/views/admin/ProjectManager.vue'),
+        },
       ],
     },
   ],

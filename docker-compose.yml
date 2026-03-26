@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  frontend:
+    image: harbor.aicode.ccwu.cc/portfolio/frontend:latest
+    container_name: portfolio-frontend
+    ports:
+      - "8090:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    image: harbor.aicode.ccwu.cc/portfolio/backend:latest
+    container_name: portfolio-backend
+    ports:
+      - "8091:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_NAME=${DB_NAME:-portfolio_db}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    restart: unless-stopped

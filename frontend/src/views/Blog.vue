@@ -58,79 +58,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import ScrollReveal from '@/components/ScrollReveal.vue'
+import { getPublishedPosts, getCategories, type BlogPost, type Category } from '@/api/blog'
 
 const activeCategory = ref('all')
+const posts = ref<any[]>([])
+const loading = ref(true)
+const categories = ref<{ label: string; value: string }[]>([{ label: '全部', value: 'all' }])
 
-const categories = [
-  { label: '全部', value: 'all' },
-  { label: '前端', value: '前端' },
-  { label: '后端', value: '后端' },
-  { label: '架构', value: '架构' },
-  { label: '团队', value: '团队' },
-]
-
-const posts = [
-  {
-    id: '1',
-    title: 'Vue 2 到 Vue 3 迁移实战：渐进式策略与踩坑记录',
-    excerpt: '分享在生产项目中从 Vue 2 逐步迁移到 Vue 3 的完整策略，包括 Composition API 改造、状态管理切换、以及如何在不停业务的前提下平稳过渡。',
-    date: '2025-12-15',
-    category: '前端',
-    tags: ['Vue 3', 'Migration', 'Composition API'],
-    readTime: 12,
-  },
-  {
-    id: '2',
-    title: '企业级前端架构设计：从项目结构到团队协作',
-    excerpt: '基于轮胎PLM系统的实战经验，总结大型B端前端项目的架构设计原则：模块划分、状态管理、组件抽象、以及工程化规范。',
-    date: '2025-10-20',
-    category: '架构',
-    tags: ['Architecture', 'Engineering', 'Vue'],
-    readTime: 15,
-  },
-  {
-    id: '3',
-    title: 'Spring Boot RESTful API 设计中的实践与反思',
-    excerpt: '在参与后端开发过程中积累的 API 设计经验：统一响应格式、异常处理、接口版本管理与前后端协作约定。',
-    date: '2025-08-10',
-    category: '后端',
-    tags: ['Spring Boot', 'REST', 'Java'],
-    readTime: 10,
-  },
-  {
-    id: '4',
-    title: '从开发者到IT主管：技术管理的第一年',
-    excerpt: '记录从纯技术角色转型为10人团队管理者的心路历程，包括如何平衡技术与管理、建立团队规范、以及跨部门沟通的技巧。',
-    date: '2025-06-05',
-    category: '团队',
-    tags: ['Management', 'Leadership', 'Growth'],
-    readTime: 8,
-  },
-  {
-    id: '5',
-    title: '复杂表单系统的设计思路：配置化 vs 组件化',
-    excerpt: '在PLM系统中面对上百个业务表单时，如何选择合适的抽象层级？对比配置化驱动和组件化方案的优劣。',
-    date: '2025-04-18',
-    category: '前端',
-    tags: ['Form Design', 'Vue', 'Architecture'],
-    readTime: 11,
-  },
-  {
-    id: '6',
-    title: '前端性能优化实战：首屏加载从 5s 到 1.5s',
-    excerpt: '在企业内网环境下，通过路由懒加载、组件按需引入、打包分析与CDN策略，将首屏加载时间压缩 70%。',
-    date: '2025-02-22',
-    category: '前端',
-    tags: ['Performance', 'Vite', 'Optimization'],
-    readTime: 9,
-  },
-]
+onMounted(async () => {
+  try {
+    const [postsRes, catsRes]: any[] = await Promise.all([getPublishedPosts(), getCategories()])
+    if (postsRes.code === 200 && postsRes.data) {
+      posts.value = postsRes.data.map((p: BlogPost) => ({
+        id: p.id,
+        title: p.title,
+        excerpt: p.excerpt,
+        category: p.category,
+        tags: p.tags ? p.tags.split(',').map((t: string) => t.trim()) : [],
+        readTime: p.readTime,
+        date: p.createdAt ? p.createdAt.substring(0, 10) : '',
+      }))
+    }
+    if (catsRes.code === 200 && catsRes.data) {
+      categories.value = [
+        { label: '全部', value: 'all' },
+        ...catsRes.data.map((c: Category) => ({ label: c.name, value: c.name })),
+      ]
+    }
+  } catch (e) {
+    console.error('Failed to load data', e)
+  } finally {
+    loading.value = false
+  }
+})
 
 const filteredPosts = computed(() => {
-  if (activeCategory.value === 'all') return posts
-  return posts.filter(p => p.category === activeCategory.value)
+  if (activeCategory.value === 'all') return posts.value
+  return posts.value.filter(p => p.category === activeCategory.value)
 })
 </script>
 

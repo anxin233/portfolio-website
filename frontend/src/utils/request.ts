@@ -2,7 +2,7 @@ import axios from 'axios'
 import type { AxiosResponse } from 'axios'
 
 const request = axios.create({
-  baseURL: '/api',
+  baseURL: '/portfolio-api',
   timeout: 15000,
 })
 
@@ -24,7 +24,7 @@ request.interceptors.response.use(
     }
     return data
   },
-  error => {
+  (error: any) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('admin_token')
       window.location.href = '/admin/login'

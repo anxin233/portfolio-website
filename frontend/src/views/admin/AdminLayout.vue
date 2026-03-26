@@ -65,6 +65,12 @@ const menuItems = [
   { path: '/admin', icon: '📊', label: '仪表盘' },
   { path: '/admin/posts', icon: '📝', label: '文章管理' },
   { path: '/admin/post/new', icon: '✏️', label: '写文章' },
+  { path: '/admin/timeline', icon: '🗓️', label: '职业历程' },
+  { path: '/admin/skills', icon: '💡', label: '技能图谱' },
+  { path: '/admin/profile', icon: '👤', label: '个人简介' },
+  { path: '/admin/values', icon: '🎯', label: '工程理念' },
+  { path: '/admin/featured-project', icon: '⭐', label: '代表作品' },
+  { path: '/admin/projects-manage', icon: '📁', label: '项目管理' },
 ]
 
 async function handleLogout() {
