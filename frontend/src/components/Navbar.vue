@@ -24,6 +24,11 @@
           <span class="nav-link-icon">{{ link.icon }}</span>
           {{ link.name }}
         </router-link>
+
+        <button class="theme-toggle" @click="themeStore.toggle()" :aria-label="themeStore.theme === 'dark' ? '切换亮色' : '切换暗色'">
+          <span class="theme-icon dark-icon" :class="{ active: themeStore.theme === 'dark' }">🌙</span>
+          <span class="theme-icon light-icon" :class="{ active: themeStore.theme === 'light' }">☀️</span>
+        </button>
       </nav>
     </div>
   </header>
@@ -31,7 +36,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useThemeStore } from '@/stores/theme'
 
+const themeStore = useThemeStore()
 const scrolled = ref(false)
 const menuOpen = ref(false)
 
@@ -63,7 +70,7 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 }
 
 .navbar.scrolled {
-  background: rgba(10, 10, 26, 0.85);
+  background: var(--navbar-bg);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-glass);
 }
@@ -155,6 +162,57 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
 .menu-open .menu-toggle span:nth-child(3) {
   transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  position: relative;
+  width: 44px;
+  height: 28px;
+  border-radius: 14px;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-glass);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent-cyan);
+}
+
+.theme-icon {
+  position: absolute;
+  top: 50%;
+  font-size: 14px;
+  line-height: 1;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(-50%);
+}
+
+.dark-icon {
+  left: 6px;
+  opacity: 0;
+  transform: translateY(-50%) scale(0.5) rotate(-90deg);
+}
+
+.dark-icon.active {
+  opacity: 1;
+  transform: translateY(-50%) scale(1) rotate(0deg);
+}
+
+.light-icon {
+  right: 5px;
+  opacity: 0;
+  transform: translateY(-50%) scale(0.5) rotate(90deg);
+}
+
+.light-icon.active {
+  opacity: 1;
+  transform: translateY(-50%) scale(1) rotate(0deg);
 }
 
 @media (max-width: 768px) {

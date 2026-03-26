@@ -3,12 +3,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useThemeStore } from '@/stores/theme'
 
+const themeStore = useThemeStore()
 const canvasRef = ref<HTMLCanvasElement>()
 let animationId: number
 let particles: Particle[] = []
 let mouse = { x: -1000, y: -1000 }
+let currentColors: string[] = []
 
 interface Particle {
   x: number
@@ -20,9 +23,15 @@ interface Particle {
   color: string
 }
 
-const colors = ['#00d4ff', '#7b2ff7', '#ff2d95', '#00e88f']
+const darkColors = ['#00d4ff', '#7b2ff7', '#ff2d95', '#00e88f']
+const lightColors = ['#0099cc', '#6b21d9', '#d6246e', '#059669']
+
+function getColors() {
+  return themeStore.theme === 'light' ? lightColors : darkColors
+}
 
 function createParticle(w: number, h: number): Particle {
+  currentColors = getColors()
   return {
     x: Math.random() * w,
     y: Math.random() * h,
@@ -30,7 +39,7 @@ function createParticle(w: number, h: number): Particle {
     vy: (Math.random() - 0.5) * 0.5,
     size: Math.random() * 2 + 0.5,
     opacity: Math.random() * 0.5 + 0.1,
-    color: colors[Math.floor(Math.random() * colors.length)],
+    color: currentColors[Math.floor(Math.random() * currentColors.length)],
   }
 }
 
@@ -110,6 +119,13 @@ function handleMouseMove(e: MouseEvent) {
   mouse.x = e.clientX
   mouse.y = e.clientY
 }
+
+watch(() => themeStore.theme, () => {
+  currentColors = getColors()
+  particles.forEach(p => {
+    p.color = currentColors[Math.floor(Math.random() * currentColors.length)]
+  })
+})
 
 onMounted(() => {
   init()

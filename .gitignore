@@ -18,6 +18,8 @@ backend/.mvn/wrapper/maven-wrapper.jar
 .DS_Store
 Thumbs.db
 
-# Env
+# Env & Secrets
 .env
 .env.local
+**/application-local.yml
+**/application-prod.yml
