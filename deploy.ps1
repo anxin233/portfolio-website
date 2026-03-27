@@ -1,5 +1,5 @@
 # ============================================
-# 构建镜像 → 推送 Harbor
+# 构建镜像 → 推送 Docker Hub（docker.io）
 # 前端：本地编译 → 打包镜像
 # 后端：本地 Maven 编译 → 打包镜像
 # 用法: .\deploy.ps1
@@ -10,10 +10,9 @@ $ErrorActionPreference = "Stop"
 # 刷新 PATH（确保 fnm、maven 等新安装的工具可用）
 $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "User") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 
-$HARBOR = "harbor.aicode.ccwu.cc"
-$PROJECT = "portfolio"
-$FRONTEND_IMAGE = "${HARBOR}/${PROJECT}/frontend:latest"
-$BACKEND_IMAGE = "${HARBOR}/${PROJECT}/backend:latest"
+$DOCKERHUB_USER = "aniden"
+$FRONTEND_IMAGE = "${DOCKERHUB_USER}/portfolio-frontend:latest"
+$BACKEND_IMAGE = "${DOCKERHUB_USER}/portfolio-backend:latest"
 
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
@@ -37,10 +36,10 @@ Set-Location backend
 mvn clean package -DskipTests -B
 Set-Location ..
 
-# 3. 登录 Harbor
+# 3. 登录 Docker Hub
 Write-Host ""
-Write-Host "[3/6] 登录 Harbor..." -ForegroundColor Yellow
-docker login $HARBOR
+Write-Host "[3/6] 登录 Docker Hub..." -ForegroundColor Yellow
+docker login
 
 # 4. 前端：将本地 dist 打包为镜像
 Write-Host ""
@@ -54,7 +53,7 @@ docker build -t $BACKEND_IMAGE ./backend
 
 # 6. 推送
 Write-Host ""
-Write-Host "[6/6] 推送镜像到 Harbor..." -ForegroundColor Yellow
+Write-Host "[6/6] 推送镜像到 Docker Hub..." -ForegroundColor Yellow
 docker push $FRONTEND_IMAGE
 docker push $BACKEND_IMAGE
 

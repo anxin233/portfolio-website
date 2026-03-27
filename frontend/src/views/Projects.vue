@@ -93,7 +93,7 @@
               <h3 class="project-name">{{ p.title }}</h3>
               <p class="project-desc">{{ p.description }}</p>
               <div class="project-tags">
-                <span class="tag" v-for="t in (p.techs || '').split(',').map(s => s.trim()).filter(Boolean)" :key="t">{{ t }}</span>
+                <span class="tag" v-for="t in (p.techs || '').split(',').map((s: string) => s.trim()).filter(Boolean)" :key="t">{{ t }}</span>
               </div>
             </div>
           </ScrollReveal>
